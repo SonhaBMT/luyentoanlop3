@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Luyện tập Toán học</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #4CAF50;
+            --primary-dark: #388E3C;
+            --secondary-color: #2196F3;
+            --background-light: #e0f2f7;
+            --text-dark: #333;
+            --text-light: #fff;
+            --border-color: #ddd;
+            --shadow-light: rgba(0, 0, 0, 0.1);
+            --correct-color: #4CAF50;
+            --incorrect-color: #f44336;
+            --info-color: #607D8B;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            background-color: var(--background-light);
+            margin: 0;
+            padding: 25px;
+            color: var(--text-dark);
+            box-sizing: border-box;
+            overflow-x: hidden; /* Ngăn cuộn ngang do pháo hoa */
+        }
+
+        .main-wrapper {
+            display: flex;
+            gap: 25px;
+            width: 100%;
+            max-width: 1020px;
+        }
+
+        .main-content {
+            flex: 2;
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+            align-items: center;
+        }
+
+        .container, .stats-container, .history-container {
+            background-color: var(--text-light);
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 6px 12px var(--shadow-light);
+            transition: transform 0.3s ease-in-out;
+            width: 100%;
+            position: relative; /* Để chứa cúp và pháo hoa */
+        }
+
+        .container:hover, .stats-container:hover, .history-container:hover {
+            transform: translateY(-4px);
+        }
+
+        .history-container {
+            flex: 1;
+            max-height: 80vh;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            /* Thêm thuộc tính margin-left để xê dịch sang phải */
+            margin-left: 15px; /* Điều chỉnh giá trị này để di chuyển nhiều hơn hoặc ít hơn */
+        }
+        .history-controls {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+        .history-controls button {
+            padding: 8px 15px;
+            font-size: 1em;
+            margin-top: 0;
+        }
+        .history-controls button.clear-button {
+            background-color: #f44336;
+        }
+        .history-controls button.clear-button:hover {
+            background-color: #d32f2f;
+        }
+        .history-controls button.download-button {
+            background-color: #2196F3;
+        }
+        .history-controls button.download-button:hover {
+            background-color: #1976D2;
+        }
+
+
+        h1, h2 {
+            font-family: 'Montserrat', sans-serif;
+            color: var(--primary-color);
+            margin-top: 0;
+            margin-bottom: 20px;
+            font-weight: 700;
+            letter-spacing: 0.4px;
+        }
+
+        h2 {
+            font-size: 1.6em;
+            color: var(--secondary-color);
+            border-bottom: 1.5px solid var(--border-color);
+            padding-bottom: 12px;
+            margin-bottom: 18px;
+        }
+
+        /* ----- Thay đổi cho đáp án chọn ----- */
+        .answer-options {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr); /* 2 cột */
+            gap: 15px; /* Khoảng cách giữa các nút */
+            margin-bottom: 20px;
+        }
+
+        .answer-options button {
+            padding: 15px 10px;
+            font-size: 1.5em; /* Kích thước chữ lớn hơn cho đáp án */
+            background-color: var(--secondary-color);
+            color: var(--text-light);
+            border: 2px solid var(--secondary-color);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.2s ease, border-color 0.3s ease;
+            width: 100%; /* Đảm bảo nút chiếm hết chiều rộng của cột */
+            box-sizing: border-box; /* Tính cả padding và border vào width */
+        }
+
+        .answer-options button:hover {
+            background-color: #1976D2; /* Màu đậm hơn khi hover */
+            transform: translateY(-2px);
+        }
+
+        .answer-options button.selected {
+            background-color: var(--primary-color);
+            border-color: var(--primary-dark);
+            transform: scale(1.02);
+        }
+
+        .answer-options button.correct-option {
+            background-color: var(--correct-color);
+            border-color: #388E3C;
+            color: var(--text-light);
+        }
+
+        .answer-options button.incorrect-option {
+            background-color: var(--incorrect-color);
+            border-color: #d32f2f;
+            color: var(--text-light);
+        }
+        /* ---------------------------------- */
+
+
+        button {
+            background-color: var(--primary-color);
+            color: var(--text-light);
+            padding: 12px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1.1em;
+            font-weight: 600;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            margin-top: 12px;
+            letter-spacing: 0.4px;
+        }
+
+        button:hover {
+            background-color: var(--primary-dark);
+            transform: translateY(-1.5px);
+        }
+
+        #equation {
+            margin-bottom: 25px;
+            font-size: 3em;
+            font-weight: 700;
+            color: var(--primary-color);
+            text-shadow: 1px 1px 1px rgba(0,0,0,0.1);
+        }
+
+        #result {
+            margin-top: 20px;
+            font-size: 2em;
+            font-weight: 700;
+        }
+
+        .correct {
+            color: var(--correct-color);
+        }
+        .incorrect {
+            color: var(--incorrect-color);
+        }
+
+        .history-list-scroll {
+            flex-grow: 1;
+            overflow-y: auto;
+        }
+        .history-item {
+            padding: 8px 0;
+            border-bottom: 1px dashed var(--border-color);
+            text-align: left;
+            font-size: 0.95em;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .history-item:last-child {
+            border-bottom: none;
+        }
+        .history-text {
+            flex-grow: 1;
+        }
+        .history-correct {
+            color: var(--correct-color);
+            font-weight: 600;
+        }
+        .history-incorrect {
+            color: var(--incorrect-color);
+            font-weight: 600;
+        }
+        .time-taken {
+            font-size: 0.75em;
+            color: var(--info-color);
+            white-space: nowrap;
+            margin-left: 10px;
+        }
+
+        .stat-line {
+            margin-bottom: 10px;
+            font-size: 1em;
+            color: var(--info-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .stat-value {
+            font-weight: 700;
+            color: var(--secondary-color);
+            font-size: 1.1em;
+        }
+        .stat-correct {
+            color: var(--correct-color);
+        }
+        .stat-incorrect {
+            color: var(--incorrect-color);
+        }
+
+        /* ----- Hiệu ứng pháo hoa và cúp ----- */
+        #trophy-animation {
+            font-size: 5em;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            opacity: 0;
+            color: gold;
+            text-shadow: 2px 2px 5px rgba(0,0,0,0.3);
+            z-index: 1000;
+            transition: all 0.5s ease-out;
+            pointer-events: none;
+        }
+
+        #trophy-animation.show {
+            animation: popAndBounce 0.8s forwards;
+        }
+
+        @keyframes popAndBounce {
+            0% { transform: translate(-50%, -50%) scale(0); opacity: 0; }
+            50% { transform: translate(-50%, -50%) scale(1.3); opacity: 1; }
+            75% { transform: translate(-50%, -50%) scale(0.9); }
+            100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+        }
+
+        .fireworks-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            overflow: hidden;
+            z-index: 999;
+        }
+
+        .firework {
+            position: absolute;
+            width: 8px; /* Kích thước hạt pháo hoa */
+            height: 8px;
+            border-radius: 50%;
+            opacity: 0;
+            animation: firework-burst 0.7s forwards ease-out;
+            background-color: var(--primary-color); /* Màu mặc định, sẽ thay đổi ngẫu nhiên */
+        }
+
+        @keyframes firework-burst {
+            0% { transform: scale(0); opacity: 1; }
+            10% { transform: scale(1); opacity: 1; }
+            100% { transform: scale(0) translateY(50px); opacity: 0; }
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 900px) {
+            .main-wrapper {
+                flex-direction: column;
+                align-items: center;
+            }
+            .main-content, .history-container {
+                flex: none;
+                width: 100%;
+                max-width: 425px;
+                margin-right: 0;
+                /* Reset margin-left cho màn hình nhỏ để tránh lỗi bố cục */
+                margin-left: 0; 
+            }
+            .history-container {
+                max-height: 40vh;
+                margin-top: 25px;
+            }
+            body {
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="main-wrapper">
+        <div class="main-content">
+            <div class="container">
+                <h1>Luyện tập Toán học</h1>
+                <div id="equation"></div>
+                <div id="answerOptions" class="answer-options">
+                    </div>
+                <button id="checkButton" onclick="checkOperation()" style="display:none;">Kiểm tra</button>
+                <div id="result"></div>
+
+                <div id="trophy-animation">🏆</div>
+            </div>
+
+            <div class="stats-container">
+                <h2>Thống kê Luyện tập</h2>
+                <div class="stat-line">
+                    <span>Tổng số câu:</span> <span id="totalQuestions" class="stat-value">0</span>
+                </div>
+                <div class="stat-line">
+                    <span>Số câu đúng:</span> <span id="correctQuestions" class="stat-value stat-correct">0</span>
+                </div>
+                <div class="stat-line">
+                    <span>Số câu sai:</span> <span id="incorrectQuestions" class="stat-value stat-incorrect">0</span>
+                </div>
+                <div class="stat-line">
+                    <span>Tổng thời gian:</span> <span id="totalTime" class="stat-value">00:00:00</span>
+                </div>
+                <div class="stat-line">
+                    <span>Số cúp nhận được:</span> <span id="trophyCountDisplay" class="stat-value">0</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="history-container">
+            <h2>Lịch sử các phép tính</h2>
+            <div id="historyList" class="history-list-scroll">
+            </div>
+            <div class="history-controls">
+                <button onclick="clearHistoryAndStats()" class="clear-button">Xóa Lịch sử & Thống kê</button>
+                <button onclick="downloadHistoryAsIni()" class="download-button">Tải xuống .ini</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="fireworks-container" id="fireworks-container"></div>
+
+    <script>
+        let currentNum1;
+        let currentNum2;
+        let currentOperation;
+        let startTime;
+        let correctAnswer; // Biến để lưu đáp án đúng
+        let selectedAnswer = null; // Biến để lưu đáp án người dùng chọn
+        const historyLimit = 500; // Thay đổi giới hạn lịch sử từ 15 thành 500
+        
+        let totalQuestions = 0;
+        let correctQuestions = 0;
+        let incorrectQuestions = 0;
+        let totalElapsedTime = 0; 
+        let trophyCount = 0; // Biến mới để lưu số cúp
+        let timerInterval;
+
+        // Mảng để lưu trữ lịch sử chi tiết cho Local Storage
+        let mathHistory = []; 
+
+        function getRandomInt(min, max) {
+            return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+
+        function formatTime(milliseconds) {
+            const totalSeconds = Math.floor(milliseconds / 1000);
+            const hours = Math.floor(totalSeconds / 3600);
+            const minutes = Math.floor((totalSeconds % 3600) / 60);
+            const seconds = totalSeconds % 60;
+
+            const pad = (num) => String(num).padStart(2, '0');
+
+            return `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
+        }
+
+        function updateStatsDisplay() {
+            document.getElementById('totalQuestions').textContent = totalQuestions;
+            document.getElementById('correctQuestions').textContent = correctQuestions;
+            document.getElementById('incorrectQuestions').textContent = incorrectQuestions;
+            document.getElementById('trophyCountDisplay').textContent = trophyCount; // Cập nhật hiển thị cúp
+        }
+
+        // Lưu lịch sử và thống kê vào Local Storage
+        function saveToLocalStorage() {
+            localStorage.setItem('mathHistory', JSON.stringify(mathHistory));
+            localStorage.setItem('totalQuestions', totalQuestions);
+            localStorage.setItem('correctQuestions', correctQuestions);
+            localStorage.setItem('incorrectQuestions', incorrectQuestions);
+            localStorage.setItem('totalElapsedTime', totalElapsedTime);
+            localStorage.setItem('trophyCount', trophyCount); // Lưu số cúp
+        }
+
+        // Tải lịch sử và thống kê từ Local Storage
+        function loadFromLocalStorage() {
+            const savedHistory = localStorage.getItem('mathHistory');
+            const savedTotalQuestions = localStorage.getItem('totalQuestions');
+            const savedCorrectQuestions = localStorage.getItem('correctQuestions');
+            const savedIncorrectQuestions = localStorage.getItem('incorrectQuestions');
+            const savedTotalElapsedTime = localStorage.getItem('totalElapsedTime');
+            const savedTrophyCount = localStorage.getItem('trophyCount'); // Tải số cúp
+
+            if (savedHistory) {
+                mathHistory = JSON.parse(savedHistory);
+                // Hiển thị lại lịch sử từ mảng đã tải
+                mathHistory.forEach(item => {
+                    const historyList = document.getElementById('historyList');
+                    const historyItem = document.createElement('div');
+                    historyItem.className = 'history-item';
+                    
+                    let resultClass = item.isCorrect ? 'history-correct' : 'history-incorrect';
+                    
+                    historyItem.innerHTML = `
+                        <span class="history-text">${item.equation.replace('= ?', '=')} <span class="${resultClass}">[${item.userAnswer}]</span></span>
+                        <span class="time-taken">(${item.timeTaken}s)</span>
+                    `;
+                    historyList.prepend(historyItem); // Thêm vào đầu để giữ đúng thứ tự
+                });
+                // Sau khi thêm vào, hãy đảm bảo số lượng không vượt quá giới hạn
+                while (document.getElementById('historyList').children.length > historyLimit) {
+                    document.getElementById('historyList').removeChild(document.getElementById('historyList').lastChild);
+                }
+            }
+
+            if (savedTotalQuestions) totalQuestions = parseInt(savedTotalQuestions);
+            if (savedCorrectQuestions) correctQuestions = parseInt(savedCorrectQuestions);
+            if (savedIncorrectQuestions) incorrectQuestions = parseInt(savedIncorrectQuestions);
+            if (savedTotalElapsedTime) totalElapsedTime = parseInt(savedTotalElapsedTime);
+            if (savedTrophyCount) trophyCount = parseInt(savedTrophyCount); // Gán số cúp đã tải
+        }
+
+        // Hàm tạo các tùy chọn đáp án
+        function generateAnswerOptions(correctAnswer) {
+            const optionsDiv = document.getElementById('answerOptions');
+            optionsDiv.innerHTML = ''; // Xóa các tùy chọn cũ
+            selectedAnswer = null; // Reset đáp án đã chọn
+
+            let answers = new Set(); // Dùng Set để đảm bảo các đáp án là duy nhất
+            answers.add(correctAnswer);
+
+            const deviationAmount = 10; // Cố định độ lệch 10 đơn vị
+
+            // Thử thêm 3 đáp án sai với độ lệch 10, -10 và 5
+            const potentialWrongAnswers = [
+                correctAnswer + deviationAmount,
+                correctAnswer - deviationAmount,
+                correctAnswer + 5, // Một đáp án sai khác
+                correctAnswer - 5, // Một đáp án sai khác
+                correctAnswer + 1, // Để đảm bảo có đủ 3 đáp án sai và đa dạng hơn
+                correctAnswer - 1
+            ];
+
+            for (const ans of potentialWrongAnswers) {
+                // Đảm bảo đáp án không âm và không trùng với đáp án đúng
+                if (ans >= 0 && ans !== correctAnswer) {
+                    // Đối với phép chia, chỉ cho phép số nguyên làm đáp án
+                    if (currentOperation === 'division') {
+                        if (Number.isInteger(ans)) {
+                             answers.add(ans);
+                        }
+                    } else {
+                        answers.add(ans);
+                    }
+                }
+                if (answers.size >= 4) break; // Đảm bảo chỉ có 4 đáp án tổng cộng
+            }
+
+            // Nếu vẫn chưa đủ 4 đáp án (1 đúng, 3 sai), thêm các số ngẫu nhiên khác
+            while (answers.size < 4) {
+                let randomWrongAnswer;
+                // Tạo một số ngẫu nhiên xa hơn để đảm bảo đủ 3 đáp án sai
+                randomWrongAnswer = getRandomInt(Math.max(0, correctAnswer - 20), correctAnswer + 20);
+                if (randomWrongAnswer !== correctAnswer) {
+                     if (currentOperation === 'division' && !Number.isInteger(randomWrongAnswer)) {
+                        continue; // Bỏ qua nếu là phép chia và không phải số nguyên
+                    }
+                    answers.add(randomWrongAnswer);
+                }
+            }
+
+            let shuffledAnswers = Array.from(answers).sort(() => Math.random() - 0.5);
+
+            shuffledAnswers.forEach(ans => {
+                const button = document.createElement('button');
+                button.textContent = ans;
+                button.className = 'answer-option-button';
+                button.onclick = () => selectAnswer(ans, button);
+                optionsDiv.appendChild(button);
+            });
+        }
+
+        // Hàm xử lý khi người dùng chọn đáp án
+        function selectAnswer(answer, button) {
+            // Xóa lớp 'selected' khỏi tất cả các nút
+            document.querySelectorAll('.answer-option-button').forEach(btn => {
+                btn.classList.remove('selected');
+            });
+
+            // Thêm lớp 'selected' vào nút được chọn
+            button.classList.add('selected');
+            selectedAnswer = answer;
+            // Tự động kiểm tra đáp án khi người dùng chọn
+            checkOperation(); 
+        }
+
+        function generateNewNumbers() {
+            const operations = ['division', 'multiplication', 'addition', 'subtraction'];
+            currentOperation = operations[Math.floor(Math.random() * operations.length)];
+
+            let num1, num2;
+
+            switch (currentOperation) {
+                case 'division':
+                    const minB_div = 1;
+                    const maxB_div = 9;
+                    const maxC = 10;
+                    let a_div, b_div, c_div;
+                    do {
+                        b_div = getRandomInt(minB_div, maxB_div);
+                        c_div = getRandomInt(1, maxC);
+                        a_div = b_div * c_div;
+                    } while (a_div === 0 || b_div === 0 || c_div === 0 || (a_div / b_div) > 10); // Giới hạn num1 / num2 <= 10
+                    currentNum1 = a_div;
+                    currentNum2 = b_div;
+                    correctAnswer = currentNum1 / currentNum2;
+                    document.getElementById('equation').textContent = `${currentNum1} / ${currentNum2} = ?`;
+                    break;
+
+                case 'multiplication':
+                    const minB_mult = 1;
+                    const maxB_mult = 9;
+                    const maxD = 9;
+                    let b_mult, d_mult;
+                    do {
+                        b_mult = getRandomInt(1, maxB_mult);
+                        d_mult = getRandomInt(1, maxD);
+                    } while (b_mult === 0 || d_mult === 0);
+                    currentNum1 = b_mult;
+                    currentNum2 = d_mult;
+                    correctAnswer = currentNum1 * currentNum2;
+                    document.getElementById('equation').textContent = `${currentNum1} * ${currentNum2} = ?`;
+                    break;
+
+                case 'addition':
+                    const maxKL = 99;
+                    let k_add, l_add;
+                    do {
+                        k_add = getRandomInt(1, maxKL);
+                        l_add = getRandomInt(1, maxKL);
+                    } while (k_add === 0 || l_add === 0);
+                    currentNum1 = k_add;
+                    currentNum2 = l_add;
+                    correctAnswer = currentNum1 + currentNum2;
+                    document.getElementById('equation').textContent = `${currentNum1} + ${currentNum2} = ?`;
+                    break;
+
+                case 'subtraction':
+                    const maxKL_sub = 99;
+                    let k_sub, l_sub;
+                    do {
+                        k_sub = getRandomInt(1, maxKL_sub);
+                        l_sub = getRandomInt(1, maxKL_sub);
+                    } while (k_sub <= l_sub || l_sub === 0);
+                    currentNum1 = k_sub;
+                    currentNum2 = l_sub;
+                    correctAnswer = currentNum1 - currentNum2;
+                    document.getElementById('equation').textContent = `${currentNum1} - ${currentNum2} = ?`;
+                    break;
+            }
+
+            document.getElementById('result').textContent = '';
+            document.getElementById('result').className = '';
+            // Tạo các nút đáp án sau khi có correctAnswer
+            generateAnswerOptions(correctAnswer); 
+
+            startTime = new Date().getTime();
+        }
+
+        function updateHistoryDisplay(item) {
+            const historyList = document.getElementById('historyList');
+            const historyItemDiv = document.createElement('div');
+            historyItemDiv.className = 'history-item';
+
+            let resultClass = item.isCorrect ? 'history-correct' : 'history-incorrect';
+
+            historyItemDiv.innerHTML = `
+                <span class="history-text">${item.equation.replace('= ?', '=')} <span class="${resultClass}">[${item.userAnswer}]</span></span>
+                <span class="time-taken">(${item.timeTaken}s)</span>
+            `;
+            historyList.prepend(historyItemDiv); // Thêm vào đầu
+
+            while (historyList.children.length > historyLimit) {
+                historyList.removeChild(historyList.lastChild);
+            }
+        }
+
+        // ----- Chức năng hiệu ứng pháo hoa và cúp -----
+        function triggerConfettiAndTrophy() {
+            const trophy = document.getElementById('trophy-animation');
+            trophy.classList.add('show');
+
+            // Tạo hiệu ứng pháo hoa
+            const fireworksContainer = document.getElementById('fireworks-container');
+            const colors = ['#FFC107', '#4CAF50', '#2196F3', '#E91E63', '#9C27B0']; // Vàng, xanh lá, xanh dương, hồng, tím
+
+            for (let i = 0; i < 50; i++) { // Tạo 50 hạt pháo hoa
+                const firework = document.createElement('div');
+                firework.className = 'firework';
+                firework.style.backgroundColor = colors[getRandomInt(0, colors.length - 1)];
+                
+                // Vị trí ngẫu nhiên trên màn hình
+                firework.style.left = `${getRandomInt(10, 90)}vw`;
+                firework.style.top = `${getRandomInt(10, 80)}vh`;
+
+                // Độ trễ ngẫu nhiên để tạo cảm giác bùng nổ
+                firework.style.animationDelay = `${i * 0.02}s`; 
+
+                // Hướng bay ngẫu nhiên (sử dụng transform)
+                const angle = Math.random() * Math.PI * 2; // Góc ngẫu nhiên
+                const distance = getRandomInt(50, 200); // Khoảng cách bay
+                firework.style.transform = `translate(${Math.cos(angle) * distance}px, ${Math.sin(angle) * distance}px) scale(0)`;
+                
+                fireworksContainer.appendChild(firework);
+            }
+
+            // Xóa hiệu ứng sau một thời gian
+            setTimeout(() => {
+                trophy.classList.remove('show');
+                fireworksContainer.innerHTML = ''; // Xóa tất cả các hạt pháo hoa
+            }, 2000); // Hiệu ứng kéo dài 2 giây
+        }
+        // ---------------------------------------------
+
+
+        function checkOperation() {
+            const resultDiv = document.getElementById('result');
+
+            if (selectedAnswer === null) {
+                resultDiv.textContent = "Vui lòng chọn một đáp án.";
+                resultDiv.className = 'incorrect';
+                return;
+            }
+
+            const endTime = new Date().getTime();
+            const timeTakenMillis = endTime - startTime;
+            const timeTakenSeconds = (timeTakenMillis / 1000).toFixed(1);
+
+            const isCorrect = (selectedAnswer === correctAnswer);
+
+            // Hiển thị kết quả và đánh dấu nút
+            document.querySelectorAll('.answer-option-button').forEach(button => {
+                if (parseInt(button.textContent) === correctAnswer) {
+                    button.classList.add('correct-option');
+                } else if (parseInt(button.textContent) === selectedAnswer && !isCorrect) {
+                    button.classList.add('incorrect-option');
+                }
+                button.disabled = true; // Vô hiệu hóa các nút sau khi trả lời
+            });
+
+            if (isCorrect) {
+                resultDiv.textContent = "ĐÚNG!";
+                resultDiv.className = 'correct';
+                correctQuestions++;
+                trophyCount++; // Tăng số cúp khi trả lời đúng
+                triggerConfettiAndTrophy(); // Kích hoạt hiệu ứng khi đúng
+            } else {
+                resultDiv.textContent = `SAI! Kết quả đúng là ${correctAnswer}.`;
+                resultDiv.className = 'incorrect';
+                incorrectQuestions++;
+            }
+
+            totalQuestions++;
+            totalElapsedTime += timeTakenMillis; 
+
+            updateStatsDisplay(); // Cập nhật hiển thị (bao gồm cúp)
+
+            let operatorSymbol;
+            switch (currentOperation) {
+                case 'division': operatorSymbol = '/'; break;
+                case 'multiplication': operatorSymbol = '*'; break;
+                case 'addition': operatorSymbol = '+'; break;
+                case 'subtraction': operatorSymbol = '-'; break;
+            }
+
+            const historyEntry = {
+                equation: `${currentNum1} ${operatorSymbol} ${currentNum2} = ?`,
+                userAnswer: selectedAnswer,
+                correctAnswer: correctAnswer,
+                isCorrect: isCorrect,
+                timeTaken: parseFloat(timeTakenSeconds)
+            };
+            mathHistory.unshift(historyEntry); 
+
+            if (mathHistory.length > historyLimit) {
+                mathHistory.pop(); 
+            }
+
+            updateHistoryDisplay(historyEntry); 
+            saveToLocalStorage(); 
+
+            // Đợi một chút trước khi tạo câu hỏi mới để người dùng có thể xem kết quả
+            setTimeout(() => {
+                // Kích hoạt lại và xóa màu sắc của các nút trước khi tạo câu hỏi mới
+                document.querySelectorAll('.answer-option-button').forEach(button => {
+                    button.disabled = false;
+                    button.classList.remove('correct-option', 'incorrect-option', 'selected');
+                });
+                generateNewNumbers();
+            }, 1500); // Đợi 1.5 giây
+        }
+
+        // Chức năng Xóa Lịch sử & Thống kê
+        function clearHistoryAndStats() {
+            if (confirm('Bạn có chắc chắn muốn xóa toàn bộ lịch sử và thống kê?')) {
+                totalQuestions = 0;
+                correctQuestions = 0;
+                incorrectQuestions = 0;
+                totalElapsedTime = 0;
+                trophyCount = 0; // Reset số cúp
+                mathHistory = []; // Xóa mảng lịch sử
+
+                updateStatsDisplay(); // Cập nhật hiển thị (bao gồm cúp)
+                document.getElementById('totalTime').textContent = '00:00:00'; // Reset thủ công
+                document.getElementById('historyList').innerHTML = ''; // Xóa hiển thị lịch sử
+
+                saveToLocalStorage(); // Lưu trạng thái trống vào Local Storage
+                generateNewNumbers(); // Tạo câu hỏi mới
+            }
+        }
+
+        // Chức năng tải xuống file .ini
+        function downloadHistoryAsIni() {
+            let iniContent = '[Stats]\n';
+            iniContent += `TotalQuestions=${totalQuestions}\n`;
+            iniContent += `CorrectQuestions=${correctQuestions}\n`;
+            iniContent += `IncorrectQuestions=${incorrectQuestions}\n`;
+            iniContent += `TotalTime=${formatTime(totalElapsedTime)}\n`;
+            iniContent += `TrophyCount=${trophyCount}\n\n`; // Thêm số cúp vào file INI
+
+            iniContent += '[History]\n';
+            mathHistory.forEach((item, index) => {
+                iniContent += `Entry${index + 1}=${item.equation.replace('= ?', '=')} UserAnswer=${item.userAnswer} CorrectAnswer=${item.correctAnswer} IsCorrect=${item.isCorrect} TimeTaken=${item.timeTaken}s\n`;
+            });
+
+            const blob = new Blob([iniContent], { type: 'text/plain;charset=utf-8' });
+            const today = new Date();
+            const filename = `math_practice_log_${today.getFullYear()}-${(today.getMonth() + 1).toString().padStart(2, '0')}-${today.getDate().toString().padStart(2, '0')}_${today.getHours().toString().padStart(2, '0')}${today.getMinutes().toString().padStart(2, '0')}${today.getSeconds().toString().padStart(2, '0')}.ini`;
+            
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(a.href); // Giải phóng URL Object
+        }
+
+        // Khởi tạo trang khi tải
+        window.onload = () => {
+            loadFromLocalStorage(); // Tải dữ liệu khi trang được tải
+            generateNewNumbers(); // Tạo câu hỏi đầu tiên
+            updateStatsDisplay(); // Cập nhật hiển thị thống kê từ dữ liệu đã tải
+            // Bắt đầu bộ đếm thời gian tổng thể
+            timerInterval = setInterval(function() {
+                const now = new Date().getTime();
+                document.getElementById('totalTime').textContent = formatTime(totalElapsedTime + (now - startTime));
+            }, 1000);
+        };
+    </script>
+</body>
+</html>
